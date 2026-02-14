@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moltymart — Hunt The Deal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream:      #f4ede0;
+      --cream-alt:  #ede4d3;
+      --ink:        #18130d;
+      --ink-mid:    #4a3f30;
+      --ink-muted:  #877565;
+      --ink-faint:  #c4b39f;
+      --rust:       #c94e1e;
+      --rust-light: #e07040;
+      --sage:       #3a6b50;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-mono:  'DM Mono', monospace;
+      --font-sans:  'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); background: var(--cream); color: var(--ink); overflow-x: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 56px;
+      background: var(--cream);
+      border-bottom: 1px solid rgba(24,19,13,.1);
+    }
+    .logo { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
+    .nav-r { display: flex; align-items: center; gap: 36px; }
+    .nav-r a { font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); text-decoration: none; transition: color .2s; }
+    .nav-r a:hover { color: var(--ink); }
+    .nav-btn { border: 1px solid var(--ink); padding: 8px 20px; border-radius: 2px; color: var(--ink) !important; transition: background .2s, color .2s !important; }
+    .nav-btn:hover { background: var(--ink) !important; color: var(--cream) !important; }
+
+    .hero { min-height: 100vh; padding: 150px 56px 90px; display: flex; flex-direction: column; justify-content: flex-end; border-bottom: 1px solid rgba(24,19,13,.1); position: relative; overflow: hidden; }
+    .hero-kicker { font-family: var(--font-mono); font-size: .65rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+    .hero-kicker::before { content:''; width: 28px; height: 1px; background: var(--ink-muted); }
+    h1 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(5rem, 14vw, 11rem); line-height: .9; letter-spacing: -.03em; text-transform: uppercase; max-width: 1100px; }
+    h1 em { font-style: italic; color: var(--rust); }
+    .hero-bottom { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 72px; gap: 48px; flex-wrap: wrap; }
+    .hero-copy p { max-width: 360px; font-size: .975rem; color: var(--ink-mid); line-height: 1.8; font-weight: 300; margin-bottom: 28px; }
+    .hero-copy p b { color: var(--ink); font-weight: 500; }
+    .cta-main { display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: var(--cream); padding: 15px 30px; border-radius: 2px; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; border: none; cursor: pointer; transition: background .2s, transform .15s; }
+    .cta-main:hover { background: var(--ink-mid); transform: translateY(-1px); }
+    .hero-tags { text-align: right; }
+    .tags-label { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; }
+    .tags { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .tag { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-mid); border: 1px solid rgba(24,19,13,.2); padding: 5px 12px; border-radius: 100px; }
+    .hero-bg-letter { position: absolute; right: -60px; bottom: -80px; font-family: var(--font-serif); font-weight: 900; font-style: italic; font-size: 38vw; line-height: 1; color: rgba(24,19,13,.03); pointer-events: none; letter-spacing: -.05em; user-select: none; }
+
+    .ticker { overflow: hidden; background: var(--ink); padding: 13px 0; }
+    .ticker-track { display: flex; white-space: nowrap; animation: tick 20s linear infinite; }
+    .ticker-item { font-family: var(--font-mono); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(244,237,224,.55); padding: 0 28px; flex-shrink: 0; }
+    .ticker-item span { color: var(--rust-light); margin: 0 10px; }
+    @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .intro { display: grid; grid-template-columns: 1fr 1fr; padding: 120px 56px; gap: 80px; align-items: center; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .intro h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.025em; text-transform: uppercase; margin-bottom: 28px; }
+    .intro h2 em { font-style: italic; color: var(--rust); }
+    .intro p { font-size: .9375rem; color: var(--ink-mid); line-height: 1.85; font-weight: 300; margin-bottom: 14px; }
+    .intro p b { color: var(--ink); font-weight: 500; }
+    .agent-window { background: var(--cream-alt); border: 1px solid rgba(24,19,13,.12); border-radius: 4px; overflow: hidden; box-shadow: 0 20px 60px rgba(24,19,13,.07); }
+    .aw-bar { background: var(--ink); padding: 12px 18px; display: flex; align-items: center; gap: 8px; }
+    .aw-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .aw-dot.r { background: #ff5f57; } .aw-dot.y { background: #febc2e; } .aw-dot.g { background: #28c840; }
+    .aw-title { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(244,237,224,.4); margin: 0 auto; }
+    .aw-body { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .aw-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--cream); border: 1px solid rgba(24,19,13,.1); border-radius: 3px; }
+    .aw-n { font-family: var(--font-mono); font-size: .6rem; color: var(--ink-faint); width: 16px; flex-shrink: 0; }
+    .aw-t { font-size: .8rem; color: var(--ink-mid); flex: 1; }
+    .aw-s { font-family: var(--font-mono); font-size: .6rem; color: var(--sage); margin-left: auto; }
+    .aw-s.pending { color: var(--rust); }
+
+    .how { padding: 120px 56px; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .how-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 80px; gap: 40px; flex-wrap: wrap; }
+    .how-head h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.025em; text-transform: uppercase; }
+    .how-head p { max-width: 280px; font-size: .875rem; color: var(--ink-mid); line-height: 1.75; font-weight: 300; }
+    .how-row { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 40px; align-items: center; padding: 56px 0; border-top: 1px solid rgba(24,19,13,.1); }
+    .how-row:last-child { border-bottom: 1px solid rgba(24,19,13,.1); }
+    .how-n { font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); align-self: start; padding-top: 4px; }
+    .how-body h3 { font-family: var(--font-serif); font-weight: 800; font-size: 1.875rem; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 14px; }
+    .how-body h3 em { font-style: italic; color: var(--rust); }
+    .how-body p { font-size: .9rem; color: var(--ink-mid); line-height: 1.75; font-weight: 300; max-width: 360px; }
+    .how-vis { height: 180px; background: var(--cream-alt); border: 1px solid rgba(24,19,13,.1); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; overflow: hidden; }
+    .how-vis .vbg { position: absolute; font-family: var(--font-serif); font-weight: 900; font-style: italic; font-size: 9rem; color: rgba(24,19,13,.05); line-height: 1; }
+    .how-vis .vi { position: relative; z-index: 1; }
+
+    .caps { border-bottom: 1px solid rgba(24,19,13,.1); }
+    .caps-head { padding: 100px 56px 56px; text-align: center; }
+    .caps-head h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(3rem, 7vw, 6rem); line-height: .92; letter-spacing: -.03em; text-transform: uppercase; }
+    .caps-head h2 em { font-style: italic; color: var(--rust); }
+    .caps-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .cap { border-top: 1px solid rgba(24,19,13,.1); display: grid; grid-template-columns: 1fr 1fr; min-height: 240px; }
+    .cap:nth-child(odd) { border-right: 1px solid rgba(24,19,13,.1); }
+    .cap-txt { padding: 44px; display: flex; flex-direction: column; justify-content: space-between; }
+    .cap-txt h3 { font-family: var(--font-serif); font-weight: 800; font-size: 1.5rem; line-height: 1.15; letter-spacing: -.02em; margin-bottom: 10px; }
+    .cap-txt h3 em { font-style: italic; color: var(--rust); }
+    .cap-txt p { font-size: .85rem; color: var(--ink-mid); line-height: 1.7; font-weight: 300; flex-grow: 1; margin-bottom: 16px; }
+    .cap-lbl { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+    .cap-vis { background: var(--cream-alt); border-left: 1px solid rgba(24,19,13,.1); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden; }
+    .cap-vis .cbg { position: absolute; font-family: var(--font-serif); font-weight: 900; font-style: italic; font-size: 8rem; color: rgba(24,19,13,.05); line-height: 1; }
+    .cap-vis .ci { position: relative; z-index: 1; }
+
+    .pricing { padding: 120px 56px; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .pricing-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 72px; gap: 32px; flex-wrap: wrap; }
+    .pricing-head h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.025em; text-transform: uppercase; }
+    .pricing-head h2 em { font-style: italic; color: var(--rust); }
+    .pricing-head p { max-width: 260px; font-size: .875rem; color: var(--ink-mid); line-height: 1.7; font-weight: 300; }
+    .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgba(24,19,13,.12); border-radius: 4px; overflow: hidden; }
+    .p-col { padding: 44px 36px; border-right: 1px solid rgba(24,19,13,.1); }
+    .p-col:last-child { border-right: none; }
+    .p-col.featured { background: var(--ink); color: var(--cream); }
+    .p-tier { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 24px; }
+    .featured .p-tier { color: rgba(244,237,224,.35); }
+    .p-price { font-family: var(--font-serif); font-weight: 900; font-size: 3rem; line-height: 1; letter-spacing: -.04em; margin-bottom: 6px; }
+    .p-freq { font-family: var(--font-mono); font-size: .65rem; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 28px; }
+    .featured .p-freq { color: rgba(244,237,224,.35); }
+    .p-sep { height: 1px; background: rgba(24,19,13,.1); margin-bottom: 24px; }
+    .featured .p-sep { background: rgba(244,237,224,.1); }
+    .p-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+    .p-list li { font-size: .85rem; color: var(--ink-mid); display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+    .featured .p-list li { color: rgba(244,237,224,.65); }
+    .p-list li::before { content: '→'; font-family: var(--font-mono); font-size: .65rem; color: var(--ink-faint); flex-shrink: 0; margin-top: 1px; }
+    .featured .p-list li::before { color: var(--rust-light); }
+    .p-btn { width: 100%; padding: 13px; font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; border-radius: 2px; border: 1px solid rgba(24,19,13,.2); background: transparent; color: var(--ink); transition: all .2s; }
+    .p-btn:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .featured .p-btn { background: var(--rust); border-color: var(--rust); color: #fff; }
+    .featured .p-btn:hover { background: var(--rust-light); border-color: var(--rust-light); }
+
+    .testi { padding: 120px 56px; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .testi-head { margin-bottom: 72px; }
+    .testi-head h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.025em; text-transform: uppercase; max-width: 580px; }
+    .testi-head h2 em { font-style: italic; color: var(--rust); }
+    .t-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgba(24,19,13,.1); border-radius: 4px; overflow: hidden; }
+    .t-col { padding: 44px 36px; border-right: 1px solid rgba(24,19,13,.1); display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
+    .t-col:last-child { border-right: none; }
+    .t-q { font-family: var(--font-serif); font-style: italic; font-weight: 700; font-size: 1.05rem; line-height: 1.65; color: var(--ink); flex: 1; }
+    .t-name { font-size: .85rem; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+    .t-role { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+
+    .waitlist { padding: 140px 56px; text-align: center; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .wl-inner { max-width: 660px; margin: 0 auto; }
+    .wl-eyebrow { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .wl-eyebrow::before, .wl-eyebrow::after { content: ''; flex: 1; max-width: 50px; height: 1px; background: var(--ink-faint); }
+    .wl-inner h2 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(3rem, 8vw, 6.5rem); line-height: .9; letter-spacing: -.03em; text-transform: uppercase; margin-bottom: 20px; }
+    .wl-inner h2 em { font-style: italic; color: var(--rust); }
+    .wl-desc { font-size: .9375rem; color: var(--ink-mid); margin-bottom: 44px; font-weight: 300; line-height: 1.75; }
+    .wl-desc b { color: var(--ink); font-weight: 500; }
+    .wl-form { display: flex; max-width: 460px; margin: 0 auto; border: 1px solid rgba(24,19,13,.22); border-radius: 3px; overflow: hidden; }
+    .wl-inp { flex: 1; border: none; padding: 15px 18px; font-size: .9rem; font-family: var(--font-sans); outline: none; background: var(--cream); color: var(--ink); font-weight: 300; }
+    .wl-inp::placeholder { color: var(--ink-faint); }
+    .wl-submit { background: var(--ink); color: var(--cream); border: none; padding: 15px 26px; font-family: var(--font-mono); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+    .wl-submit:hover { background: var(--ink-mid); }
+    .wl-note { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); margin-top: 16px; }
+    .wl-ok { display: none; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sage); margin-top: 18px; padding: 13px 18px; border: 1px solid rgba(58,107,80,.3); border-radius: 3px; background: rgba(58,107,80,.05); }
+    .wl-ok.show { display: block; }
+    .wl-err { display: none; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--rust); margin-top: 18px; padding: 13px 18px; border: 1px solid rgba(201,78,30,.3); border-radius: 3px; background: rgba(201,78,30,.05); }
+    .wl-err.show { display: block; }
+
+    footer { padding: 36px 56px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; background: var(--cream-alt); }
+    .f-logo { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+    .f-links { display: flex; gap: 28px; list-style: none; }
+    .f-links a { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); text-decoration: none; transition: color .2s; }
+    .f-links a:hover { color: var(--ink); }
+    .f-copy { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      .nav-r a:not(.nav-btn) { display: none; }
+      .hero, .intro, .how, .pricing, .testi, .waitlist { padding: 80px 24px; }
+      .hero { padding-top: 120px; }
+      .intro { grid-template-columns: 1fr; gap: 40px; }
+      .how-row { grid-template-columns: 48px 1fr; gap: 20px; }
+      .how-vis { display: none; }
+      .caps-head { padding: 60px 24px 40px; }
+      .caps-grid { grid-template-columns: 1fr; }
+      .cap { grid-template-columns: 1fr; border-right: none !important; min-height: auto; }
+      .cap-vis { height: 90px; }
+      .p-grid { grid-template-columns: 1fr; }
+      .p-col { border-right: none; border-bottom: 1px solid rgba(24,19,13,.1); }
+      .p-col:last-child { border-bottom: none; }
+      .t-grid { grid-template-columns: 1fr; }
+      .t-col { border-right: none; border-bottom: 1px solid rgba(24,19,13,.1); }
+      .t-col:last-child { border-bottom: none; }
+      .wl-form { flex-direction: column; }
+      footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+      .hero-tags { text-align: left; }
+      .tags { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">Moltymart</a>
+  <div class="nav-r">
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="moltymart-app.html" class="nav-btn">Meet Molly →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <span class="hero-bg-letter">M</span>
+  <div class="hero-kicker">AI Shopping Agent · Powered by OpenClaw</div>
+  <h1>Hunt<br/>The <em>Deal.</em></h1>
+  <div class="hero-bottom">
+    <div class="hero-copy">
+      <p>Meet <b>Molly</b> — your personal AI shopping agent. Describe what you need, and Molly hunts it down across thousands of Indonesian stores, in seconds.</p>
+      <a class="cta-main" href="moltymart-app.html">Start Chatting with Molly →</a>
+    </div>
+    <div class="hero-tags">
+      <div class="tags-label">Powered By</div>
+      <div class="tags">
+        <span class="tag">OpenClaw</span>
+        <span class="tag">Supabase</span>
+        <span class="tag">Claude AI</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">Smart Search <span>·</span></span>
+    <span class="ticker-item">Price Intelligence <span>·</span></span>
+    <span class="ticker-item">Auto Checkout <span>·</span></span>
+    <span class="ticker-item">Deal Hunting <span>·</span></span>
+    <span class="ticker-item">Review Analysis <span>·</span></span>
+    <span class="ticker-item">Restock Alerts <span>·</span></span>
+    <span class="ticker-item">Multi-Store <span>·</span></span>
+    <span class="ticker-item">Meet Molly <span>·</span></span>
+    <span class="ticker-item">Smart Search <span>·</span></span>
+    <span class="ticker-item">Price Intelligence <span>·</span></span>
+    <span class="ticker-item">Auto Checkout <span>·</span></span>
+    <span class="ticker-item">Deal Hunting <span>·</span></span>
+    <span class="ticker-item">Review Analysis <span>·</span></span>
+    <span class="ticker-item">Restock Alerts <span>·</span></span>
+    <span class="ticker-item">Multi-Store <span>·</span></span>
+    <span class="ticker-item">Meet Molly <span>·</span></span>
+  </div>
+</div>
+
+<section class="intro">
+  <div>
+    <h2>Commerce Is<br/>Entering Its<br/><em>New Stage</em></h2>
+    <p><b>S</b>hopping has evolved — from walking to markets, to browsing online, and now to agentic commerce.</p>
+    <p><b>Molly</b> is your AI agent that shops alongside you — understanding context, hunting deals, and handling checkout end-to-end.</p>
+  </div>
+  <div class="agent-window">
+    <div class="aw-bar">
+      <div class="aw-dot r"></div><div class="aw-dot y"></div><div class="aw-dot g"></div>
+      <span class="aw-title">molly · session active</span>
+    </div>
+    <div class="aw-body">
+      <div class="aw-row"><span class="aw-n">01</span><span class="aw-t">Scanning 2,847 products across 14 stores...</span><span class="aw-s">✓ Done</span></div>
+      <div class="aw-row"><span class="aw-n">02</span><span class="aw-t">Running price & review analysis...</span><span class="aw-s">✓ Done</span></div>
+      <div class="aw-row"><span class="aw-n">03</span><span class="aw-t">Applying promo codes — saved Rp 89,000</span><span class="aw-s">✓ Done</span></div>
+      <div class="aw-row"><span class="aw-n">04</span><span class="aw-t">Ready to purchase — awaiting approval</span><span class="aw-s pending">→ Confirm?</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="how-head">
+    <h2>How It<br/>Works</h2>
+    <p>Molly is bespokely designed for the new stage of commerce. Agentic. Intelligent. Effortless.</p>
+  </div>
+  <div class="how-row">
+    <div class="how-n">01 /</div>
+    <div class="how-body"><h3>Describe Your <em>Intent</em></h3><p>Open Moltymart, describe the vibe, the specs, or the budget. Natural language in — Molly instantly captures context. No forms. No filters.</p></div>
+    <div class="how-vis"><span class="vbg">1</span><span class="vi">💬</span></div>
+  </div>
+  <div class="how-row">
+    <div class="how-n">02 /</div>
+    <div class="how-body"><h3>Review The <em>Picks</em></h3><p>Molly scouts over 10,000 products and trusted vendors, bringing you curated options matched to your exact needs and budget.</p></div>
+    <div class="how-vis"><span class="vbg">2</span><span class="vi">🔍</span></div>
+  </div>
+  <div class="how-row">
+    <div class="how-n">03 /</div>
+    <div class="how-body"><h3>Approve & <em>Purchase</em></h3><p>Like what Molly found? Click once. She completes checkout, applies all discounts, and confirms your order end-to-end.</p></div>
+    <div class="how-vis"><span class="vbg">3</span><span class="vi">✓</span></div>
+  </div>
+</section>
+
+<section class="caps">
+  <div class="caps-head"><h2>Shopping Without<br/>The <em>Shopping</em></h2></div>
+  <div class="caps-grid">
+    <div class="cap">
+      <div class="cap-txt"><div><h3>Shopping &amp;<br/><em>Gifts</em></h3><p>Tell Molly what you need, for whom, and at what budget. She finds the perfect product and handles checkout — no tabs, no filters.</p></div><div class="cap-lbl">01 — Retail</div></div>
+      <div class="cap-vis"><span class="cbg">S</span><span class="ci">🛍️</span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-txt"><div><h3>Price<br/><em>Intelligence</em></h3><p>Track price history, detect flash sales, and get notified at the perfect moment. Never overpay again on any purchase.</p></div><div class="cap-lbl">02 — Analytics</div></div>
+      <div class="cap-vis"><span class="cbg">P</span><span class="ci">📊</span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-txt"><div><h3>Business<br/><em>Procurement</em></h3><p>Automate team purchasing workflows. Molly handles supplier comparison, bulk ordering, and delivery tracking for your UMKM.</p></div><div class="cap-lbl">03 — B2B</div></div>
+      <div class="cap-vis"><span class="cbg">B</span><span class="ci">🏢</span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-txt"><div><h3>Restock<br/><em>Alerts</em></h3><p>Set a product once. Molly monitors it across all stores — notifying you on restock, price drops, or limited-time deals.</p></div><div class="cap-lbl">04 — Monitoring</div></div>
+      <div class="cap-vis"><span class="cbg">R</span><span class="ci">🔔</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="pricing-head">
+    <h2>Simple,<br/><em>Honest</em><br/>Pricing</h2>
+    <p>Start free. Upgrade when Molly works harder than you do.</p>
+  </div>
+  <div class="p-grid">
+    <div class="p-col">
+      <div class="p-tier">Starter</div>
+      <div class="p-price">Rp 0</div>
+      <div class="p-freq">Free forever</div>
+      <div class="p-sep"></div>
+      <ul class="p-list"><li>50 searches per month</li><li>5 stores monitored</li><li>Basic price comparison</li><li>Email notifications</li></ul>
+      <button class="p-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Get Started Free</button>
+    </div>
+    <div class="p-col featured">
+      <div class="p-tier">Pro</div>
+      <div class="p-price">Rp 99K</div>
+      <div class="p-freq">Per month</div>
+      <div class="p-sep"></div>
+      <ul class="p-list"><li>Unlimited searches</li><li>50+ stores monitored</li><li>Auto-checkout & negotiation</li><li>Price history analytics</li><li>Priority support</li></ul>
+      <button class="p-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+    </div>
+    <div class="p-col">
+      <div class="p-tier">Business</div>
+      <div class="p-price">Rp 499K</div>
+      <div class="p-freq">Per month · 5 seats</div>
+      <div class="p-sep"></div>
+      <ul class="p-list"><li>5 team members</li><li>Unlimited stores</li><li>Bulk ordering support</li><li>OpenClaw API access</li><li>Custom integrations</li></ul>
+      <button class="p-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Contact Sales</button>
+    </div>
+  </div>
+</section>
+
+<section class="testi">
+  <div class="testi-head">
+    <div class="hero-kicker" style="margin-bottom:16px;">Early Feedback</div>
+    <h2>What Our <em>Beta</em><br/>Users Say</h2>
+  </div>
+  <div class="t-grid">
+    <div class="t-col"><p class="t-q">"I saved Rp 2 juta on a camera in the first week. Molly found a deal I would never have discovered manually."</p><div><div class="t-name">Rizky A.</div><div class="t-role">Photographer · Jakarta</div></div></div>
+    <div class="t-col"><p class="t-q">"Our procurement team spent hours comparing suppliers. Molly cut that to minutes. Game changer for our UMKM."</p><div><div class="t-name">Sari W.</div><div class="t-role">Owner · Warung Sari Digital</div></div></div>
+    <div class="t-col"><p class="t-q">"The review analysis alone is worth it. Molly reads thousands of reviews and tells me what matters. No more remorse."</p><div><div class="t-name">Dian P.</div><div class="t-role">Product Manager · Bandung</div></div></div>
+  </div>
+</section>
+
+<section class="waitlist" id="waitlist">
+  <div class="wl-inner">
+    <div class="wl-eyebrow">Reserve Your Access</div>
+    <h2>Meet<br/><em>Molly.</em></h2>
+    <p class="wl-desc">Be one of the first to chat with <b>Molly</b>, your personal AI shopping agent. Beta users get <b>3 months Pro free.</b></p>
+    <div class="wl-form">
+      <input type="email" id="wlEmail" class="wl-inp" placeholder="your@email.com"/>
+      <button class="wl-submit" id="wlBtn" onclick="doWaitlist()">Join</button>
+    </div>
+    <div class="wl-ok" id="wlOk">→ You're on the list. Molly will reach out soon.</div>
+    <div class="wl-err" id="wlErr">Something went wrong. Please try again.</div>
+    <p class="wl-note">We only email with launch milestones.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">Moltymart</div>
+  <ul class="f-links">
+    <li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li>
+    <li><a href="moltymart-app.html">App</a></li><li><a href="#">Docs</a></li>
+  </ul>
+  <div class="f-copy">© 2025 Moltymart · Built on OpenClaw</div>
+</footer>
+
+<script>
+const SB_URL = 'https://vxpegselpekebhzrlxfg.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4cGVnc2VscGVrZWJoenJseGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODc0MjcsImV4cCI6MjA4NjY2MzQyN30.ay0ziEI8QevAdxGa_u1elD4TZOS8VzPMIqRSA-k4JIc';
+
+async function doWaitlist() {
+  const email = document.getElementById('wlEmail').value.trim();
+  const btn = document.getElementById('wlBtn');
+  const okEl = document.getElementById('wlOk');
+  const errEl = document.getElementById('wlErr');
+
+  if (!email || !email.includes('@')) {
+    const el = document.getElementById('wlEmail');
+    el.style.outline = '2px solid #c94e1e'; el.focus();
+    setTimeout(() => el.style.outline = '', 2000); return;
+  }
+
+  btn.textContent = '...'; btn.disabled = true;
+  okEl.classList.remove('show'); errEl.classList.remove('show');
+
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/waitlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ email, source: 'moltymart_landing', created_at: new Date().toISOString() })
+    });
+
+    if (res.ok || res.status === 409) {
+      document.querySelector('.wl-form').style.display = 'none';
+      okEl.classList.add('show');
+    } else {
+      throw new Error('Failed');
+    }
+  } catch {
+    btn.textContent = 'Join'; btn.disabled = false;
+    errEl.classList.add('show');
+  }
+}
+
+document.getElementById('wlEmail').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doWaitlist();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/app", "destination": "/moltymart-app.html" },
+    { "source": "/", "destination": "/index.html" }
+  ]
+}

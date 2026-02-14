@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moltymart — Chat with Molly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream:     #f4ede0;
+      --cream-alt: #ede4d3;
+      --cream-msg: #e8deca;
+      --ink:       #18130d;
+      --ink-mid:   #4a3f30;
+      --ink-muted: #877565;
+      --ink-faint: #c4b39f;
+      --rust:      #c94e1e;
+      --rust-light:#e07040;
+      --sage:      #3a6b50;
+      --font-serif:'Playfair Display', Georgia, serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-sans: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font-sans); background: var(--cream); color: var(--ink); display: flex; flex-direction: column; }
+
+    .topbar {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px; background: var(--cream);
+      border-bottom: 1px solid rgba(24,19,13,.12); z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
+    .back-btn:hover { color: var(--ink); }
+    .divider-v { width: 1px; height: 16px; background: rgba(24,19,13,.15); }
+    .agent-info { display: flex; align-items: center; gap: 10px; }
+    .agent-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: .875rem; }
+    .agent-name { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+    .agent-status { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .06em; color: var(--sage); display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+    .top-badge { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); border: 1px solid rgba(24,19,13,.18); padding: 5px 12px; border-radius: 100px; }
+
+    .app-body { flex: 1; display: flex; overflow: hidden; }
+
+    .sidebar { width: 256px; flex-shrink: 0; border-right: 1px solid rgba(24,19,13,.1); display: flex; flex-direction: column; background: var(--cream-alt); overflow: hidden; }
+    .sidebar-head { padding: 18px 18px 12px; border-bottom: 1px solid rgba(24,19,13,.1); }
+    .sidebar-title { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 10px; }
+    .new-btn { width: 100%; padding: 10px 14px; background: var(--ink); color: var(--cream); border: none; border-radius: 2px; cursor: pointer; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; transition: background .2s; text-align: left; display: flex; align-items: center; gap: 8px; }
+    .new-btn:hover { background: var(--ink-mid); }
+    .s-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+    .s-list::-webkit-scrollbar { width: 3px; }
+    .s-list::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 2px; }
+    .s-item { padding: 10px 12px; border-radius: 3px; cursor: pointer; transition: background .15s; }
+    .s-item:hover { background: rgba(24,19,13,.06); }
+    .s-item.active { background: rgba(24,19,13,.1); }
+    .s-title { font-size: .8rem; color: var(--ink); font-weight: 400; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-meta { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .05em; color: var(--ink-faint); }
+    .sidebar-footer { padding: 12px 18px; border-top: 1px solid rgba(24,19,13,.1); }
+    .sidebar-footer p { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.6; }
+
+    .chat-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .chat-msgs { flex: 1; overflow-y: auto; padding: 32px 40px; display: flex; flex-direction: column; gap: 24px; }
+    .chat-msgs::-webkit-scrollbar { width: 3px; }
+    .chat-msgs::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 2px; }
+
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+    .empty-title { font-family: var(--font-serif); font-weight: 900; font-style: italic; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1; letter-spacing: -.02em; color: var(--ink); margin-bottom: 10px; }
+    .empty-sub { font-size: .875rem; color: var(--ink-muted); font-weight: 300; margin-bottom: 32px; max-width: 340px; line-height: 1.7; }
+    .sugg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 460px; width: 100%; }
+    .sugg { background: var(--cream-alt); border: 1px solid rgba(24,19,13,.12); border-radius: 3px; padding: 13px 15px; cursor: pointer; text-align: left; font-size: .8rem; color: var(--ink-mid); line-height: 1.45; transition: background .15s, border-color .15s; font-family: var(--font-sans); font-weight: 300; }
+    .sugg:hover { background: var(--cream-msg); border-color: rgba(24,19,13,.22); }
+    .sugg strong { display: block; font-size: .58rem; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; font-weight: 400; }
+
+    .msg { display: flex; gap: 12px; max-width: 800px; }
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+    .m-avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .7rem; margin-top: 2px; }
+    .m-avatar.agent { background: var(--ink); color: var(--cream); }
+    .m-avatar.user { background: var(--rust); color: #fff; font-family: var(--font-mono); font-size: .6rem; }
+    .m-body { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .m-name { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+    .msg.user .m-name { text-align: right; }
+    .m-bubble { padding: 13px 16px; border-radius: 3px; line-height: 1.7; font-size: .875rem; font-weight: 300; color: var(--ink); }
+    .msg.agent .m-bubble { background: var(--cream-alt); border: 1px solid rgba(24,19,13,.1); border-top-left-radius: 0; }
+    .msg.user .m-bubble { background: var(--ink); color: var(--cream); border-top-right-radius: 0; }
+    .m-bubble p + p { margin-top: 8px; }
+    .m-bubble b { font-weight: 500; }
+
+    .product-card { display: flex; align-items: center; gap: 11px; background: var(--cream); border: 1px solid rgba(24,19,13,.12); border-radius: 3px; padding: 11px 13px; margin-top: 9px; cursor: pointer; transition: border-color .2s; }
+    .product-card:hover { border-color: rgba(24,19,13,.3); }
+    .p-emoji { font-size: 1.6rem; flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--cream-alt); border-radius: 3px; }
+    .p-info { flex: 1; }
+    .p-name { font-size: .825rem; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+    .p-price { font-family: var(--font-mono); font-size: .68rem; color: var(--rust); letter-spacing: .04em; font-weight: 500; }
+    .p-meta { font-family: var(--font-mono); font-size: .58rem; color: var(--ink-faint); letter-spacing: .04em; }
+    .p-why { font-family: var(--font-mono); font-size: .58rem; color: var(--ink-mid); margin-top: 2px; }
+    .p-badge { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 2px; background: rgba(58,107,80,.1); color: var(--sage); flex-shrink: 0; white-space: nowrap; }
+
+    .typing { display: flex; gap: 4px; align-items: center; padding: 13px 16px; background: var(--cream-alt); border: 1px solid rgba(24,19,13,.1); border-radius: 3px; border-top-left-radius: 0; width: fit-content; }
+    .t-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-faint); animation: bounce .9s ease-in-out infinite; }
+    .t-dot:nth-child(2) { animation-delay: .15s; }
+    .t-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+    .input-area { flex-shrink: 0; padding: 14px 24px 18px; border-top: 1px solid rgba(24,19,13,.1); background: var(--cream); }
+    .chat-form { display: flex; align-items: flex-end; gap: 9px; background: var(--cream-alt); border: 1px solid rgba(24,19,13,.18); border-radius: 4px; padding: 9px 11px; transition: border-color .2s; }
+    .chat-form:focus-within { border-color: rgba(24,19,13,.4); }
+    .chat-ta { flex: 1; border: none; background: transparent; outline: none; font-family: var(--font-sans); font-size: .875rem; color: var(--ink); font-weight: 300; resize: none; min-height: 22px; max-height: 120px; line-height: 1.6; }
+    .chat-ta::placeholder { color: var(--ink-faint); }
+    .send-btn { width: 34px; height: 34px; border: none; border-radius: 2px; background: var(--ink); color: var(--cream); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s; font-size: .85rem; }
+    .send-btn:hover { background: var(--ink-mid); }
+    .send-btn:disabled { background: var(--ink-faint); cursor: not-allowed; }
+    .input-hint { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin-top: 7px; text-align: center; }
+
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .chat-msgs { padding: 20px 16px; }
+      .input-area { padding: 12px 16px 16px; }
+      .sugg-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a class="back-btn" href="index.html">← Back</a>
+    <div class="divider-v"></div>
+    <div class="agent-info">
+      <div class="agent-avatar">🛍️</div>
+      <div>
+        <div class="agent-name">Molly</div>
+        <div class="agent-status"><span class="status-dot"></span>Online · Ready to hunt</div>
+      </div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="top-badge">Powered by OpenClaw</span>
+  </div>
+</div>
+
+<div class="app-body">
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">Conversations</div>
+      <button class="new-btn" onclick="newChat()">+ New Hunt</button>
+    </div>
+    <div class="s-list" id="sList"></div>
+    <div class="sidebar-footer">
+      <p>Molly searches Tokopedia, Shopee, Lazada, Blibli & more.</p>
+    </div>
+  </div>
+
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="input-area">
+      <div class="chat-form">
+        <textarea id="chatInput" class="chat-ta" placeholder="Tell Molly what you're looking for..." rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMsg()">↑</button>
+      </div>
+      <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────────
+const SB_URL  = 'https://vxpegselpekebhzrlxfg.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4cGVnc2VscGVrZWJoenJseGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODc0MjcsImV4cCI6MjA4NjY2MzQyN30.ay0ziEI8QevAdxGa_u1elD4TZOS8VzPMIqRSA-k4JIc';
+const API_URL = `${SB_URL}/functions/v1/chat`;
+
+const SYSTEM = `You are Molly, Moltymart's AI shopping agent for the Indonesian market. You're friendly, sharp, and efficient.
+
+Your job:
+1. Understand what the user needs (product, budget, use case, preferences)
+2. Recommend specific products from Indonesian stores (Tokopedia, Shopee, Lazada, Blibli, Bukalapak, JD.ID)
+3. Give 2-3 curated recommendations with realistic IDR prices
+4. Help them compare options and guide toward a decision
+
+Response rules:
+- Be conversational and warm, like a knowledgeable friend
+- Use Indonesian when user writes in Indonesian, English otherwise
+- Keep responses focused — no fluff
+- When recommending products, use this EXACT format for each:
+
+[PRODUCT]
+Name: (product name)
+Price: (Rp amount)
+Store: (store name)
+Rating: (X.X ⭐)
+Match: (best match / best value / budget pick)
+Why: (1 sentence reason)
+[/PRODUCT]
+
+After listing products, ask if they want to proceed or need adjustments.`;
+
+// ── State ────────────────────────────────────────────────
+let convos = {}, currentId = null, loading = false;
+const chatMsgs = document.getElementById('chatMsgs');
+const chatInput = document.getElementById('chatInput');
+const sendBtn   = document.getElementById('sendBtn');
+const sList     = document.getElementById('sList');
+
+// ── Auto-resize textarea ─────────────────────────────────
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+// ── New chat ─────────────────────────────────────────────
+function newChat() {
+  currentId = Date.now().toString();
+  convos[currentId] = { title: 'New Hunt', messages: [], ts: new Date() };
+  renderSidebar(); renderEmpty(); setActive(currentId);
+}
+
+function renderEmpty() {
+  chatMsgs.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-title">Hi, I'm Molly.</div>
+      <p class="empty-sub">Tell me what you're looking for — the vibe, specs, or budget. I'll hunt the best deals across Indonesia.</p>
+      <div class="sugg-grid">
+        <button class="sugg" onclick="useSugg(this)"><strong>Electronics</strong>Laptop untuk desain grafis, budget Rp 15 juta</button>
+        <button class="sugg" onclick="useSugg(this)"><strong>Fashion</strong>Sepatu lari yang bagus untuk marathon</button>
+        <button class="sugg" onclick="useSugg(this)"><strong>Rumah Tangga</strong>Air purifier terbaik untuk kamar 3x3 meter</button>
+        <button class="sugg" onclick="useSugg(this)"><strong>Kado</strong>Hadiah ulang tahun teman perempuan, Rp 300rb</button>
+      </div>
+    </div>`;
+}
+
+function setActive(id) {
+  document.querySelectorAll('.s-item').forEach(el => el.classList.remove('active'));
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (el) el.classList.add('active');
+}
+
+function renderSidebar() {
+  sList.innerHTML = '';
+  Object.entries(convos).sort((a,b) => b[1].ts - a[1].ts).forEach(([id, c]) => {
+    const el = document.createElement('div');
+    el.className = 's-item' + (id === currentId ? ' active' : '');
+    el.dataset.id = id;
+    const time = c.ts.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+    el.innerHTML = `<div class="s-title">${c.title}</div><div class="s-meta">${time}</div>`;
+    el.onclick = () => loadChat(id);
+    sList.appendChild(el);
+  });
+}
+
+function loadChat(id) {
+  currentId = id; setActive(id);
+  chatMsgs.innerHTML = '';
+  convos[id].messages.filter(m => m.role !== 'system').forEach(m => {
+    m.role === 'user' ? appendUser(m.content, false) : appendAgent(m.content, false);
+  });
+  scrollDown();
+}
+
+// ── Send ─────────────────────────────────────────────────
+async function sendMsg() {
+  const text = chatInput.value.trim();
+  if (!text || loading) return;
+
+  if (!currentId) {
+    currentId = Date.now().toString();
+    convos[currentId] = { title: text.slice(0, 38), messages: [], ts: new Date() };
+    renderSidebar(); setActive(currentId);
+  }
+
+  // Remove empty state
+  const es = chatMsgs.querySelector('.empty-state');
+  if (es) es.remove();
+
+  chatInput.value = ''; chatInput.style.height = 'auto';
+  appendUser(text);
+  convos[currentId].messages.push({ role: 'user', content: text });
+
+  const userCount = convos[currentId].messages.filter(m => m.role === 'user').length;
+  if (userCount === 1) {
+    convos[currentId].title = text.slice(0, 36) + (text.length > 36 ? '…' : '');
+    renderSidebar(); setActive(currentId);
+  }
+
+  const typingEl = appendTyping();
+  loading = true; sendBtn.disabled = true;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SB_KEY}`,
+      },
+      body: JSON.stringify({ system: SYSTEM, messages: convos[currentId].messages })
+    });
+
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Maaf, ada masalah koneksi. Coba lagi ya!';
+    typingEl.remove();
+    appendAgent(reply);
+    convos[currentId].messages.push({ role: 'assistant', content: reply });
+  } catch {
+    typingEl.remove();
+    appendAgent('Koneksi bermasalah. Pastikan internet kamu stabil dan coba lagi.');
+  }
+
+  loading = false; sendBtn.disabled = false; chatInput.focus();
+}
+
+// ── Render helpers ────────────────────────────────────────
+function appendUser(text, scroll = true) {
+  const el = document.createElement('div');
+  el.className = 'msg user';
+  el.innerHTML = `<div class="m-avatar user">U</div><div class="m-body"><div class="m-name">You</div><div class="m-bubble">${esc(text)}</div></div>`;
+  chatMsgs.appendChild(el);
+  if (scroll) scrollDown();
+}
+
+function appendAgent(text, scroll = true) {
+  const el = document.createElement('div');
+  el.className = 'msg agent';
+  el.innerHTML = `<div class="m-avatar agent">🛍️</div><div class="m-body"><div class="m-name">Molly</div><div class="m-bubble">${parseText(text)}</div></div>`;
+  chatMsgs.appendChild(el);
+  if (scroll) scrollDown();
+}
+
+function appendTyping() {
+  const el = document.createElement('div');
+  el.className = 'msg agent';
+  el.innerHTML = `<div class="m-avatar agent">🛍️</div><div class="m-body"><div class="m-name">Molly</div><div class="typing"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+  chatMsgs.appendChild(el); scrollDown();
+  return el;
+}
+
+function parseText(text) {
+  const re = /\[PRODUCT\]([\s\S]*?)\[\/PRODUCT\]/g;
+  let result = text, m;
+  while ((m = re.exec(text)) !== null) {
+    const b = m[1];
+    const get = k => { const x = b.match(new RegExp(k + ':\\s*(.+)')); return x ? x[1].trim() : ''; };
+    const card = `<div class="product-card">
+      <div class="p-emoji">${getEmoji(get('Name'))}</div>
+      <div class="p-info">
+        <div class="p-name">${esc(get('Name'))}</div>
+        <div class="p-price">${esc(get('Price'))}</div>
+        <div class="p-meta">${esc(get('Store'))} · ${esc(get('Rating'))}</div>
+        <div class="p-why">${esc(get('Why'))}</div>
+      </div>
+      <div class="p-badge">${esc(get('Match'))}</div>
+    </div>`;
+    result = result.replace(m[0], card);
+  }
+  return result
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .split('\n\n').map(p => p.trim() ? `<p>${p.replace(/\n/g,'<br/>')}</p>` : '').join('') || text;
+}
+
+function getEmoji(name) {
+  const n = (name||'').toLowerCase();
+  if (n.includes('laptop')||n.includes('macbook')||n.includes('notebook')) return '💻';
+  if (n.includes('phone')||n.includes('hp')||n.includes('iphone')||n.includes('samsung')) return '📱';
+  if (n.includes('sepatu')||n.includes('shoes')||n.includes('sneaker')) return '👟';
+  if (n.includes('kamera')||n.includes('camera')) return '📷';
+  if (n.includes('headphone')||n.includes('earphone')||n.includes('tws')) return '🎧';
+  if (n.includes('purifier')||n.includes('ac ')||n.includes('kipas')) return '💨';
+  if (n.includes('watch')||n.includes('jam')) return '⌚';
+  if (n.includes('baju')||n.includes('kaos')||n.includes('shirt')) return '👕';
+  return '🛍️';
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function scrollDown() { setTimeout(() => chatMsgs.scrollTop = chatMsgs.scrollHeight, 50); }
+
+function useSugg(btn) {
+  const lines = btn.innerText.split('\n').map(l=>l.trim()).filter(Boolean);
+  chatInput.value = lines.slice(1).join(' ').trim() || lines[0];
+  chatInput.style.height = chatInput.scrollHeight + 'px';
+  chatInput.focus();
+}
+
+// ── Init ─────────────────────────────────────────────────
+newChat();
+</script>
+</body>
+</html>
